@@ -2,6 +2,8 @@ import pygame
 from pygame.locals import *
 import os
 import sys
+import math
+
 screen_height = 400
 screen_width = 320
 placing_ready = False
@@ -11,10 +13,34 @@ print("Reading!")
 main_dir = os.path.split(os.path.abspath(__file__))[0]
 
 print("Defining functions!")
+
+
 def load_image(file):
+    """loads an image, prepares it for play"""
     file = os.path.join(main_dir, "assets", file)
-    surface = pygame.image.load(file)
+    try:
+        surface = pygame.image.load(file)
+    except pygame.error:
+        raise SystemExit(f'Could not load image "{file}" {pygame.get_error()}')
     return surface.convert()
+
+
+def get_angle(y2, y1, x2, x1):
+    adjacent = int(y2) - int(y1)
+    opposite = int(x2) - int(x1)
+    angle = int(opposite / adjacent)
+    return angle
+
+
+def get_outofrange(y2, y1, x2, x1, range):
+    inRange = True
+    a = int(y2) - int(y1)
+    o = int(x2) - int(x1)
+    if a > range or o > range:
+        inRange = False
+    else:
+        inRange = True
+    return inRange
 
 
 def exit(e):
@@ -25,8 +51,6 @@ def exit(e):
 
 
 class Blaster(pygame.sprite.Sprite):
-    images = []
-
     def __init__(self, pos):
         super().__init__()
         self.image = pygame.Surface((80, 80))
@@ -41,13 +65,32 @@ class Blaster(pygame.sprite.Sprite):
             self.kill()
 
 
+class Bullet(pygame.sprite.Sprite):
+    print("placeholder")
+
+
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.Surface((40, 40))
+        self.image.fill(255, 0, 0)
+        self.rect = self.image.get_rect()
+
+    def update(self):
+        enemyX = "placeholder"
+        enemyY = "placeholder"
+
+
 def main():
     # Init
     pygame.init()
     # Divisible by 80, 10x8 grid of 16x16 squares.
-    pygame.display.set_caption('Robot\'s Tower Defense')
+    # pygame.display.set_caption('Robot\'s Tower Defense')
+    pygame.display.set_caption("Tower Defense*")
     print("initializing!")
     screen = pygame.display.set_mode((800, 640))
+    icon = load_image("icon.png")
+    pygame.display.set_icon(icon)
 
     background = pygame.Surface(screen.get_size())
     background = background.convert()
@@ -62,7 +105,7 @@ def main():
             if event.type == QUIT:
                 exit(True)
                 print("quitting!")
-            if event.type == pygame.MOUSEBUTTONDOWN: # and placing_ready == True:
+            if event.type == pygame.MOUSEBUTTONDOWN:  # and placing_ready == True:
                 blaster = Blaster(current_mouse_pos)
                 blaster_group.add(blaster)
         screen.blit(background, (0, 0))
