@@ -22,7 +22,7 @@ def load_image(file):
         surface = pygame.image.load(file)
     except pygame.error:
         raise SystemExit(f'Could not load image "{file}" {pygame.get_error()}')
-    return surface.convert()
+    return surface.convert_alpha()
 
 
 def get_angle(y2, y1, x2, x1):
@@ -32,15 +32,15 @@ def get_angle(y2, y1, x2, x1):
     return angle
 
 
-def get_outofrange(y2, y1, x2, x1, range):
-    inRange = True
+def get_out_of_range(y2, y1, x2, x1, t_range):
+    in_range = True
     a = int(y2) - int(y1)
     o = int(x2) - int(x1)
-    if a > range or o > range:
-        inRange = False
+    if a > t_range or o > t_range:
+        in_range = False
     else:
-        inRange = True
-    return inRange
+        in_range = True
+    return in_range
 
 
 def exit(e):
@@ -53,32 +53,40 @@ def exit(e):
 class Blaster(pygame.sprite.Sprite):
     def __init__(self, pos):
         super().__init__()
-        self.image = pygame.Surface((80, 80))
-        self.image.fill((255, 255, 255))
+        self.images = []
+        self.images.append(pygame.transform.scale(load_image("blaster.png"), (80,80)))
+        self.images.append(load_image("blaster1.png"))
+        self.image_num = 0
+        self.image = self.images[0]
         self.rect = self.image.get_rect(center=pos)
         self.rect = self.image.get_rect(center=(pos[0], pos[1]))
 
     def update(self):
-        # placeholder
-        pos = pygame.mouse.get_pos()
-        if abs(pos[0] - self.rect.x) < 20 and abs(pos[1] - self.rect.y) < 20 and pygame.mouse.get_pressed()[0]:
-            self.kill()
+        print("updated")
+        # placeholder[0]
 
 
 class Bullet(pygame.sprite.Sprite):
-    print("placeholder")
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.Surface((18,8))
+        self.image.fill((255, 0, 0))
+        self.rect = self.image.get_rect(center=(0, 0))
+
+    def update(self):
+        self.rect.x += 5
 
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.image = pygame.Surface((40, 40))
-        self.image.fill(255, 0, 0)
+        self.image.fill((255, 0, 0))
         self.rect = self.image.get_rect()
 
     def update(self):
-        enemyX = "placeholder"
-        enemyY = "placeholder"
+        ex = "placeholder"
+        ey = "placeholder"
 
 
 def main():
@@ -94,13 +102,13 @@ def main():
 
     background = pygame.Surface(screen.get_size())
     background = background.convert()
+    background.fill((178, 246, 247))
 
     blaster_group = pygame.sprite.Group()
 
     # Update loop
     while True:
         current_mouse_pos = pygame.mouse.get_pos()
-        print("updated!")
         for event in pygame.event.get():
             if event.type == QUIT:
                 exit(True)
@@ -108,8 +116,12 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:  # and placing_ready == True:
                 blaster = Blaster(current_mouse_pos)
                 blaster_group.add(blaster)
-        screen.blit(background, (0, 0))
 
+        # update stuff
+        blaster_group.update()
+
+        # drawing
+        screen.blit(background, (0, 0))
         blaster_group.draw(screen)
         # blaster_group.update(current_mouse_pos)
         # Might be a problem when the background gets pasted over sprites
